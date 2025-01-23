@@ -77,8 +77,9 @@ def record_midi():
                 delta_seconds = current_time - start_time
                 msg.time = int(delta_seconds * 480)  # Convert to MIDI ticks
                 
-                # Add message to track
-                track.append(msg)
+                # Only add non-realtime messages to track
+                if not msg.is_realtime:
+                    track.append(msg)
                 
                 # Print message details
                 if msg.type in ['note_on', 'note_off']:
