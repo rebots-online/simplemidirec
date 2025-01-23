@@ -4,6 +4,7 @@ import mido
 import sys
 import time
 from datetime import datetime
+from simple_term_menu import TerminalMenu
 
 def list_midi_ports():
     """List all available MIDI input ports"""
@@ -21,9 +22,22 @@ def record_midi():
     # List available ports
     list_midi_ports()
     
-    # Get the first available port
-    port_name = mido.get_input_names()[0]
-    print(f"\nUsing MIDI input port: {port_name}")
+    # Let user select the port
+    ports = mido.get_input_names()
+    terminal_menu = TerminalMenu(
+        ports,
+        title="Select MIDI input port:",
+        menu_cursor="▶ ",
+        menu_cursor_style=("fg_green", "bold"),
+        menu_highlight_style=("bg_green", "fg_black"),
+    )
+    menu_index = terminal_menu.show()
+    if menu_index is None:
+        print("\nNo port selected. Exiting...")
+        sys.exit(0)
+        
+    port_name = ports[menu_index]
+    print(f"\nSelected MIDI input port: {port_name}")
 
     # Create output filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
