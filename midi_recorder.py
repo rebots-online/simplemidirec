@@ -72,10 +72,11 @@ def record_midi():
                 # Wait for MIDI message
                 msg = port.receive()
                 
-                # Calculate time delta in MIDI ticks (480 per quarter note)
+                # Calculate relative time delta between messages
                 current_time = time.time()
-                delta_seconds = current_time - start_time
-                msg.time = int(delta_seconds * 480)  # Convert to MIDI ticks
+                delta_time = current_time - start_time
+                msg.time = int(delta_time * 480)  # Convert to MIDI ticks at 120 BPM
+                start_time = current_time  # Reset for next message's delta calculation
                 
                 # Only add non-realtime messages to track
                 if not msg.is_realtime:
