@@ -30,7 +30,17 @@ def record_midi():
     output_file = f"piano_recording_{timestamp}.mid"
     
     # Create a new MIDI file
-    mid = mido.MidiFile()
+    mid = mido.MidiFile(type=1, ticks_per_beat=480)
+    
+    # Create tempo track
+    tempo_track = mido.MidiTrack()
+    mid.tracks.append(tempo_track)
+    
+    # Add time signature and tempo events
+    tempo_track.append(mido.MetaMessage('time_signature', numerator=4, denominator=4))
+    tempo_track.append(mido.MetaMessage('set_tempo', tempo=mido.bpm2tempo(120)))
+    
+    # Create track for piano events
     track = mido.MidiTrack()
     mid.tracks.append(track)
     
@@ -44,20 +54,24 @@ def record_midi():
                 # Wait for MIDI message
                 msg = port.receive()
                 
-                # Calculate time since last message
+                # Calculate time delta in MIDI ticks (480 per quarter note)
                 current_time = time.time()
-                delta_time = int((current_time - start_time) * 1000)  # Convert to milliseconds
-                msg.time = delta_time
+                delta_seconds = current_time - start_time
+                msg.time = int(delta_seconds * 480)  # Convert to MIDI ticks
                 
                 # Add message to track
                 track.append(msg)
                 
                 # Print message details
                 if msg.type in ['note_on', 'note_off']:
+                    note_name = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][msg.note % 12]
+                    octave = msg.note // 12 - 1
                     print(f"Note {'On' if msg.type == 'note_on' else 'Off'}: "
-                          f"Note={msg.note}, Velocity={msg.velocity}")
+                          f"{note_name}{octave} (note={msg.note}, velocity={msg.velocity})")
                 elif msg.type == 'control_change' and msg.control == 64:
                     print(f"Sustain Pedal: {'On' if msg.value >= 64 else 'Off'}")
+                elif msg.type == 'control_change':
+                    print(f"Control Change: control={msg.control}, value={msg.value}")
                 
                 start_time = current_time
 
