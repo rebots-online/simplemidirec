@@ -10,9 +10,12 @@ fi
 echo "Activating virtual environment..."
 source venv/bin/activate
 
+# Ensure pip is up to date
+python -m pip install --upgrade pip
+
 # Install requirements
 echo "Installing requirements..."
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
 echo -e "\nSetup complete! Virtual environment is active."
 echo "To start recording MIDI, run: ./midi_recorder.py"
