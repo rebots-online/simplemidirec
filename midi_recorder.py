@@ -47,15 +47,15 @@ def record_midi():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = f"piano_recording_{timestamp}.mid"
     
-    # Create a new MIDI file
-    mid = mido.MidiFile(type=1, ticks_per_beat=480)
+    # Create a new MIDI file with higher resolution
+    mid = mido.MidiFile(type=1, ticks_per_beat=960)
     
     # Create tempo track
     tempo_track = mido.MidiTrack()
     mid.tracks.append(tempo_track)
     
-    # Add time signature and tempo events
-    tempo_track.append(mido.MetaMessage('time_signature', numerator=4, denominator=4))
+    # Add time signature and tempo events (120 BPM)
+    tempo_track.append(mido.MetaMessage('time_signature', numerator=4, denominator=4, clocks_per_click=24))
     tempo_track.append(mido.MetaMessage('set_tempo', tempo=mido.bpm2tempo(120)))
     
     # Create track for piano events
@@ -72,11 +72,11 @@ def record_midi():
                 # Wait for MIDI message
                 msg = port.receive()
                 
-                # Calculate relative time delta between messages
+                # Calculate relative time between this message and the last one
                 current_time = time.time()
                 delta_time = current_time - start_time
-                msg.time = int(delta_time * 480)  # Convert to MIDI ticks at 120 BPM
-                start_time = current_time  # Reset for next message's delta calculation
+                msg.time = int(delta_time * 960)  # Convert to MIDI ticks (higher resolution)
+                start_time = current_time  # Reset for next delta calculation
                 
                 # Only add non-realtime messages to track
                 if not msg.is_realtime:
